@@ -17,11 +17,14 @@ void print_menu() {
     printf("1. Add member to club\n");
     printf("2. Remove member from club\n");
     printf("3. Change member role\n");
-    printf("4. Generate overall financial report\n");
-    printf("5. Generate club financial report\n");
-    printf("6. Generate fund requests report\n");
-    printf("7. Validate data associations\n");
-    printf("8. Exit\n");
+    printf("4. Add Transaction (Income/Expense)\n");
+    printf("5. List Transactions\n");
+    printf("6. Verify Club Balance\n");
+    printf("7. Generate overall financial report\n");
+    printf("8. Generate club financial report\n");
+    printf("9. Generate fund requests report\n");
+    printf("10. Validate data associations\n");
+    printf("11. Exit\n");
     printf("Choose an option: ");
 }
 
@@ -60,32 +63,60 @@ int main() {
                 scanf("%d", &user_id);
                 printf("Enter new role (0=Member, 1=President, 2=Admin, 3=Officer): ");
                 scanf("%d", &new_role);
-                change_member_role(club_id, user_id, (Role)new_role);
+                // Use add_member_to_club to update role as per club.c implementation
+                add_member_to_club(club_id, user_id, (Role)new_role);
                 break;
             }
-            case 4:
+            case 4: {
+                int club_id;
+                double amount;
+                char desc[256];
+                printf("Enter club ID: ");
+                scanf("%d", &club_id);
+                printf("Enter amount (positive for income, negative for expense): ");
+                scanf("%lf", &amount);
+                printf("Enter description: ");
+                scanf(" %[^\n]", desc); // Read string with spaces
+                add_transaction(club_id, amount, desc);
+                break;
+            }
+            case 5: {
+                int club_id;
+                printf("Enter club ID: ");
+                scanf("%d", &club_id);
+                list_transactions(club_id);
+                break;
+            }
+            case 6: {
+                int club_id;
+                printf("Enter club ID: ");
+                scanf("%d", &club_id);
+                verify_balance(club_id);
+                break;
+            }
+            case 7:
                 generate_financial_report();
                 break;
-            case 5: {
+            case 8: {
                 int club_id;
                 printf("Enter club ID: ");
                 scanf("%d", &club_id);
                 generate_club_financial_report(club_id);
                 break;
             }
-            case 6:
+            case 9:
                 generate_fund_requests_report();
                 break;
-            case 7:
+            case 10:
                 validate_data_associations();
                 break;
-            case 8:
+            case 11:
                 printf("Exiting...\n");
                 break;
             default:
                 printf("Invalid choice.\n");
         }
-    } while (choice != 8);
+    } while (choice != 11);
     save_data();
     return 0;
 }

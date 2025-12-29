@@ -201,4 +201,3 @@ void remove_member_from_club_list(Club* club, int user_id) {
         curr = curr->next;
     }
 }
-}
