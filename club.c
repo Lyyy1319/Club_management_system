@@ -97,6 +97,22 @@ void remove_member_from_club(int club_id, int user_id) {
     remove_member_from_club_list(c, user_id);
 }
 
+// Change member role
+void change_member_role(int club_id, int user_id, Role new_role) {
+    Club* c = find_club_by_id(club_id);
+    if (!c) {
+        printf("Club not found.\n");
+        return;
+    }
+    Member* m = find_member_in_club(c, user_id);
+    if (!m) {
+        printf("Member not found in this club.\n");
+        return;
+    }
+    m->role_in_club = new_role;
+    printf("Member role changed successfully.\n");
+}
+
 // Insert club at head of list
 void insert_club_at_head(Club* new_club) {
     new_club->next = clubs_head;
@@ -183,4 +199,5 @@ void remove_member_from_club_list(Club* club, int user_id) {
         prev = curr;
         curr = curr->next;
     }
+}
 }

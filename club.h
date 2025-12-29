@@ -12,6 +12,7 @@ void delete_club(int id);
 // Member management
 void add_member_to_club(int club_id, int user_id, Role role);
 void remove_member_from_club(int club_id, int user_id);
+void change_member_role(int club_id, int user_id, Role new_role);
 
 // Utility functions for linked list management
 void insert_club_at_head(Club* new_club);
