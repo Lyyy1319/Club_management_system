@@ -236,3 +236,10 @@ void load_data() {
     load_participants();
     load_fund_requests();
 }
+
+// Helper function to find club by id
+Club* find_club(int club_id) {
+    Club *c = clubs_head;
+    while (c && c->id != club_id) c = c->next;
+    return c;
+}

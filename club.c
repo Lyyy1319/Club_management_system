@@ -2,13 +2,7 @@
 #include <stdlib.h>
 #include "club.h"
 #include "models.h"
-
-// Helper function to find club by id
-Club* find_club(int club_id) {
-    Club *c = clubs_head;
-    while (c && c->id != club_id) c = c->next;
-    return c;
-}
+#include "utils.h"
 
 // Helper function to find member in club
 Member* find_member(Club *club, int user_id) {
