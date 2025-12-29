@@ -3,6 +3,7 @@
 #include <string.h>
 #include "club.h"
 #include "models.h"
+#include "utils.h"
 
 // Helper function to generate next club ID
 int get_next_club_id() {

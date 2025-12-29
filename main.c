@@ -3,6 +3,7 @@
 #include "models.h"
 #include "utils.h"
 #include "club.h"
+#include "finance.h"
 
 // Define global heads
 User *users_head = NULL;
@@ -16,7 +17,11 @@ void print_menu() {
     printf("1. Add member to club\n");
     printf("2. Remove member from club\n");
     printf("3. Change member role\n");
-    printf("4. Exit\n");
+    printf("4. Generate overall financial report\n");
+    printf("5. Generate club financial report\n");
+    printf("6. Generate fund requests report\n");
+    printf("7. Validate data associations\n");
+    printf("8. Exit\n");
     printf("Choose an option: ");
 }
 
@@ -59,12 +64,28 @@ int main() {
                 break;
             }
             case 4:
+                generate_financial_report();
+                break;
+            case 5: {
+                int club_id;
+                printf("Enter club ID: ");
+                scanf("%d", &club_id);
+                generate_club_financial_report(club_id);
+                break;
+            }
+            case 6:
+                generate_fund_requests_report();
+                break;
+            case 7:
+                validate_data_associations();
+                break;
+            case 8:
                 printf("Exiting...\n");
                 break;
             default:
                 printf("Invalid choice.\n");
         }
-    } while (choice != 4);
+    } while (choice != 8);
     save_data();
     return 0;
 }
