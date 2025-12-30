@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "club.h"
 #include "models.h"
 #include "utils.h"
@@ -200,4 +201,100 @@ void remove_member_from_club_list(Club* club, int user_id) {
         prev = curr;
         curr = curr->next;
     }
+}
+// Helper for case-insensitive substring search
+int str_contains_ignore_case(const char* haystack, const char* needle) {
+    if (!needle || !*needle) return 1;
+    if (!haystack || !*haystack) return 0;
+    
+    // Create copies to avoid modifying originals
+    char *h = malloc(strlen(haystack) + 1);
+    char *n = malloc(strlen(needle) + 1);
+    if (!h || !n) {
+        if(h) free(h);
+        if(n) free(n);
+        return 0;
+    }
+    strcpy(h, haystack);
+    strcpy(n, needle);
+    
+    for(int i=0; h[i]; i++) h[i] = tolower((unsigned char)h[i]);
+    for(int i=0; n[i]; i++) n[i] = tolower((unsigned char)n[i]);
+    
+    int result = (strstr(h, n) != NULL);
+    
+    free(h);
+    free(n);
+    return result;
+}
+
+void search_clubs_fuzzy(const char* keyword) {
+    printf("\n--- Search Results for '%s' ---\n", keyword);
+    Club* c = clubs_head;
+    int found = 0;
+    while (c) {
+        if (str_contains_ignore_case(c->name, keyword)) {
+            printf("ID: %d | Name: %s | Balance: %.2f | Approved: %d\n", 
+                   c->id, c->name, c->balance, c->approved);
+            found = 1;
+        }
+        c = c->next;
+    }
+    if (!found) {
+        printf("No clubs found matching '%s'.\n", keyword);
+    }
+    printf("-------------------------------\n");
+}
+
+void swap_club_data(Club *a, Club *b) {
+    int temp_id = a->id; a->id = b->id; b->id = temp_id;
+    
+    char *temp_name = a->name; a->name = b->name; b->name = temp_name;
+    
+    char *temp_date = a->found_date; a->found_date = b->found_date; b->found_date = temp_date;
+    
+    int temp_founder = a->founder_id; a->founder_id = b->founder_id; b->founder_id = temp_founder;
+    
+    Member *temp_members = a->members; a->members = b->members; b->members = temp_members;
+    
+    double temp_bal = a->balance; a->balance = b->balance; b->balance = temp_bal;
+    
+    int temp_app = a->approved; a->approved = b->approved; b->approved = temp_app;
+}
+
+void sort_clubs(int criteria) {
+    if (!clubs_head || !clubs_head->next) return;
+    
+    int swapped;
+    Club *ptr1;
+    Club *lptr = NULL;
+    
+    do {
+        swapped = 0;
+        ptr1 = clubs_head;
+        
+        while (ptr1->next != lptr) {
+            int should_swap = 0;
+            switch (criteria) {
+                case 1: // ID
+                    if (ptr1->id > ptr1->next->id) should_swap = 1;
+                    break;
+                case 2: // Name
+                    if (strcmp(ptr1->name, ptr1->next->name) > 0) should_swap = 1;
+                    break;
+                case 3: // Balance (Descending)
+                    if (ptr1->balance < ptr1->next->balance) should_swap = 1;
+                    break;
+            }
+            
+            if (should_swap) {
+                swap_club_data(ptr1, ptr1->next);
+                swapped = 1;
+            }
+            ptr1 = ptr1->next;
+        }
+        lptr = ptr1;
+    } while (swapped);
+    
+    printf("Clubs sorted successfully.\n");
 }

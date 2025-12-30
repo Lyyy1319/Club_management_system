@@ -21,4 +21,8 @@ Member* find_member_in_club(Club* club, int user_id);
 void insert_member_at_head(Club* club, Member* new_member);
 void remove_member_from_club_list(Club* club, int user_id);
 
+// Search and Sort
+void search_clubs_fuzzy(const char* keyword);
+void sort_clubs(int criteria); // 1: ID, 2: Name, 3: Balance
+
 #endif

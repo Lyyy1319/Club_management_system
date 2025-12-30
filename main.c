@@ -24,7 +24,9 @@ void print_menu() {
     printf("8. Generate club financial report\n");
     printf("9. Generate fund requests report\n");
     printf("10. Validate data associations\n");
-    printf("11. Exit\n");
+    printf("11. Search Clubs (Fuzzy)\n");
+    printf("12. Sort Clubs\n");
+    printf("13. Exit\n");
     printf("Choose an option: ");
 }
 
@@ -110,13 +112,27 @@ int main() {
             case 10:
                 validate_data_associations();
                 break;
-            case 11:
+            case 11: {
+                char keyword[100];
+                printf("Enter search keyword: ");
+                scanf(" %[^\n]", keyword);
+                search_clubs_fuzzy(keyword);
+                break;
+            }
+            case 12: {
+                int criteria;
+                printf("Sort by: 1. ID, 2. Name, 3. Balance: ");
+                scanf("%d", &criteria);
+                sort_clubs(criteria);
+                break;
+            }
+            case 13:
                 printf("Exiting...\n");
                 break;
             default:
                 printf("Invalid choice.\n");
         }
-    } while (choice != 11);
+    } while (choice != 13);
     save_data();
     return 0;
 }
