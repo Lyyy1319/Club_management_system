@@ -34,6 +34,7 @@ Club* create_club(char* name, char* found_date, int founder_id) {
     new_club->next = NULL;
 
     insert_club_at_head(new_club);
+    log_action("Create club id=%d name=%s founder=%d", new_club->id, new_club->name, founder_id);
     return new_club;
 }
 
@@ -68,6 +69,7 @@ void update_club(int id, char* name, char* found_date, int founder_id, double ba
 // Delete club
 void delete_club(int id) {
     remove_club_from_list(id);
+    log_action("Delete club id=%d", id);
 }
 
 // Add member to club
@@ -89,6 +91,7 @@ void add_member_to_club(int club_id, int user_id, Role role) {
     new_member->next = NULL;
 
     insert_member_at_head(c, new_member);
+    log_action("Add member user=%d to club=%d role=%d", user_id, club_id, role);
 }
 
 // Remove member from club
@@ -97,6 +100,7 @@ void remove_member_from_club(int club_id, int user_id) {
     if (!c) return;
 
     remove_member_from_club_list(c, user_id);
+    log_action("Remove member user=%d from club=%d", user_id, club_id);
 }
 
 // Change member role
@@ -113,6 +117,7 @@ void change_member_role(int club_id, int user_id, Role new_role) {
     }
     m->role_in_club = new_role;
     printf("Member role changed successfully.\n");
+    log_action("Change member role user=%d in club=%d to=%d", user_id, club_id, new_role);
 }
 
 // Insert club at head of list
