@@ -110,7 +110,7 @@ static int get_next_tx_id() {
 void add_transaction(int club_id, double amount, const char *desc) {
     Club *c = find_club(club_id);
     if (!c) {
-        printf("Club %d not found.\n", club_id);
+        printf("社团 %d 未找到。\n", club_id);
         return;
     }
     Transaction *t = malloc(sizeof(Transaction));
@@ -128,7 +128,7 @@ void add_transaction(int club_id, double amount, const char *desc) {
     t->next = tx_head;
     tx_head = t;
     c->balance += amount;
-    printf("Added transaction %d for club %d: %.2f\n", t->id, club_id, amount);
+    printf("已添加交易 %d，社团 %d: %.2f\n", t->id, club_id, amount);
     log_action("Add transaction id=%d club=%d amount=%.2f desc=%s", t->id, club_id, amount, desc);
 }
 
@@ -144,7 +144,7 @@ void list_transactions(int club_id) {
 
 void verify_balance(int club_id) {
     Club *c = find_club(club_id);
-    if (!c) { printf("Club %d not found.\n", club_id); return; }
+    if (!c) { printf("社团 %d 未找到。\n", club_id); return; }
     double sum = 0;
     Transaction *t = tx_head;
     while (t) {
@@ -152,9 +152,9 @@ void verify_balance(int club_id) {
         t = t->next;
     }
     if (fabs(sum - c->balance) > 0.01) {
-        printf("Balance mismatch for club %d: computed %.2f vs stored %.2f\n", club_id, sum, c->balance);
+        printf("社团 %d 余额不匹配: 计算值 %.2f，存储值 %.2f\n", club_id, sum, c->balance);
         log_action("Balance mismatch club=%d computed=%.2f stored=%.2f", club_id, sum, c->balance);
     } else {
-        printf("Balance verified for club %d.\n", club_id);
+        printf("社团 %d 余额验证通过。\n", club_id);
     }
 }

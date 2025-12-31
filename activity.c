@@ -36,11 +36,11 @@ Activity* create_activity(int club_id, const char *name, const char *start_time,
     int conflict_id = -1;
     int check = check_activity_time_conflict(club_id, start_time, end_time, &conflict_id);
     if (check == -1) {
-        printf("Invalid time format. Use 'YYYY-MM-DD HH:MM' or similar.\n");
+        printf("时间格式无效。请使用 'YYYY-MM-DD HH:MM' 格式。\n");
         return NULL;
     }
     if (check == 1) {
-        printf("Time conflict with activity id=%d. Creation aborted.\n", conflict_id);
+        printf("与活动 ID=%d 存在时间冲突，创建已取消。\n", conflict_id);
         return NULL;
     }
 
@@ -61,54 +61,54 @@ Activity* create_activity(int club_id, const char *name, const char *start_time,
 }
 
 void list_activities_for_club(int club_id) {
-    printf("Activities for club %d:\n", club_id);
+    printf("社团 %d 的活动:\n", club_id);
     Activity *a = activities_head;
     int found = 0;
     while (a) {
         if (a->club_id == club_id) {
-            printf("ID:%d Name:%s Start:%s End:%s Approved:%d\n", a->id, a->name, a->start_time, a->end_time, a->approved);
+            printf("ID:%d 名称:%s 开始:%s 结束:%s 审核状态:%d\n", a->id, a->name, a->start_time, a->end_time, a->approved);
             found = 1;
         }
         a = a->next;
     }
-    if (!found) printf(" No activities found.\n");
+    if (!found) printf(" 未找到活动。\n");
 }
 
 // ------------ Compatibility wrappers for other branch ------------
 
 void publish_activity(int club_id, const char *name, const char *start_time, const char *end_time) {
     Activity *a = create_activity(club_id, name, start_time, end_time);
-    if (a) printf("Activity '%s' published with ID %d.\n", a->name, a->id);
+    if (a) printf("活动 '%s' 已发布，ID 为 %d。\n", a->name, a->id);
 }
 
 void register_for_activity(int activity_id, int user_id) {
     Activity *a = activities_head;
     while (a && a->id != activity_id) a = a->next;
-    if (!a) { printf("Activity %d not found.\n", activity_id); return; }
+    if (!a) { printf("活动 %d 未找到。\n", activity_id); return; }
     Participant *p = a->participants;
-    while (p) { if (p->user_id == user_id) { printf("User %d already registered.\n", user_id); return; } p = p->next; }
+    while (p) { if (p->user_id == user_id) { printf("用户 %d 已报名。\n", user_id); return; } p = p->next; }
     Participant *np = malloc(sizeof(Participant));
     if (!np) return;
     np->user_id = user_id;
     np->next = a->participants;
     a->participants = np;
-    printf("User %d registered for activity %d.\n", user_id, activity_id);
+    printf("用户 %d 已成功报名活动 %d。\n", user_id, activity_id);
 }
 
 void list_activities(int club_id) {
     Activity *a = activities_head;
     int found = 0;
-    printf("\n--- Activity List ---\n");
+    printf("\n--- 活动列表 ---\n");
     while (a) {
         if (club_id == 0 || a->club_id == club_id) {
             int count = 0; Participant *p = a->participants; while (p) { count++; p = p->next; }
-            printf("ID: %d | Club ID: %d | Name: %s\n", a->id, a->club_id, a->name);
-            printf("   Time: %s - %s\n", a->start_time, a->end_time);
-            printf("   Participants: %d\n", count);
+            printf("ID: %d | 社团ID: %d | 名称: %s\n", a->id, a->club_id, a->name);
+            printf("   时间: %s - %s\n", a->start_time, a->end_time);
+            printf("   参与人数: %d\n", count);
             printf("---------------------\n");
             found = 1;
         }
         a = a->next;
     }
-    if (!found) printf("No activities found.\n");
+    if (!found) printf("未找到活动。\n");
 }

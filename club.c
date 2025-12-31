@@ -107,16 +107,16 @@ void remove_member_from_club(int club_id, int user_id) {
 void change_member_role(int club_id, int user_id, Role new_role) {
     Club* c = find_club_by_id(club_id);
     if (!c) {
-        printf("Club not found.\n");
+        printf("社团未找到。\n");
         return;
     }
     Member* m = find_member_in_club(c, user_id);
     if (!m) {
-        printf("Member not found in this club.\n");
+        printf("该成员不在此社团中。\n");
         return;
     }
     m->role_in_club = new_role;
-    printf("Member role changed successfully.\n");
+    printf("成员角色修改成功。\n");
     log_action("Change member role user=%d in club=%d to=%d", user_id, club_id, new_role);
 }
 
@@ -234,19 +234,19 @@ int str_contains_ignore_case(const char* haystack, const char* needle) {
 }
 
 void search_clubs_fuzzy(const char* keyword) {
-    printf("\n--- Search Results for '%s' ---\n", keyword);
+    printf("\n--- '%s' 的搜索结果 ---\n", keyword);
     Club* c = clubs_head;
     int found = 0;
     int max_distance = 2;
     if (keyword && strlen(keyword) > 6) max_distance = (int)(strlen(keyword) / 3);
     while (c) {
         if (str_contains_ignore_case(c->name, keyword)) {
-            printf("ID: %d | Name: %s | Balance: %.2f | Approved: %d\n",
+            printf("ID: %d | 名称: %s | 余额: %.2f | 审核状态: %d\n",
                    c->id, c->name, c->balance, c->approved);
             found = 1;
         } else {
             if (fuzzy_match(c->name, keyword, max_distance)) {
-                printf("ID: %d | Name: %s | Balance: %.2f | Approved: %d (fuzzy)\n",
+                printf("ID: %d | 名称: %s | 余额: %.2f | 审核状态: %d (模糊匹配)\n",
                        c->id, c->name, c->balance, c->approved);
                 found = 1;
             }
@@ -254,7 +254,7 @@ void search_clubs_fuzzy(const char* keyword) {
         c = c->next;
     }
     if (!found) {
-        printf("No clubs found matching '%s'.\n", keyword);
+        printf("未找到匹配 '%s' 的社团。\n", keyword);
     }
     printf("-------------------------------\n");
 }
@@ -309,5 +309,5 @@ void sort_clubs(int criteria) {
         lptr = ptr1;
     } while (swapped);
     
-    printf("Clubs sorted successfully.\n");
+    printf("社团排序完成。\n");
 }
