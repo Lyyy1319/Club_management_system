@@ -1,7 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
+#include <time.h>
+#include <sys/stat.h>
+#ifdef _WIN32
+#include <direct.h>
+#define mkdir(path,mode) _mkdir(path)
+#endif
 #include "models.h"
+#include "utils.h"
 
 void save_users() {
     FILE *fp = fopen("users.txt", "w");
@@ -96,6 +104,82 @@ void save_data() {
     save_activities();
     save_participants();
     save_fund_requests();
+}
+
+// ----- Operation log implementation -----
+void log_action(const char *fmt, ...) {
+    FILE *fp = fopen("operation.log", "a");
+    if (!fp) return;
+    time_t t = time(NULL);
+    struct tm *tmp = localtime(&t);
+    if (tmp) {
+        char timestr[64];
+        strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", tmp);
+        fprintf(fp, "[%s] ", timestr);
+    }
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(fp, fmt, ap);
+    va_end(ap);
+    fprintf(fp, "\n");
+    fclose(fp);
+}
+
+// Helper: copy file (binary-safe)
+static int copy_file(const char *src, const char *dst) {
+    FILE *fsrc = fopen(src, "rb");
+    if (!fsrc) return -1;
+    FILE *fdst = fopen(dst, "wb");
+    if (!fdst) { fclose(fsrc); return -2; }
+    char buf[4096];
+    size_t n;
+    while ((n = fread(buf, 1, sizeof(buf), fsrc)) > 0) {
+        if (fwrite(buf, 1, n, fdst) != n) { fclose(fsrc); fclose(fdst); return -3; }
+    }
+    fclose(fsrc);
+    fclose(fdst);
+    return 0;
+}
+
+// Create backups/<timestamp>/ and copy data files
+int create_backup() {
+    time_t t = time(NULL);
+    struct tm *tmp = localtime(&t);
+    if (!tmp) return -1;
+    char dirname[256];
+    strftime(dirname, sizeof(dirname), "backups/backup_%Y%m%d_%H%M%S", tmp);
+    // create backups dir if needed
+    mkdir("backups", 0755);
+    if (mkdir(dirname, 0755) != 0) {
+        // On some platforms mkdir returns -1 if exists; we ignore that
+    }
+    const char *files[] = {"users.txt","clubs.txt","members.txt","transactions.txt","activities.txt","participants.txt","fund_requests.txt","operation.log"};
+    int i;
+    for (i = 0; i < (int)(sizeof(files)/sizeof(files[0])); i++) {
+        char dst[512];
+        snprintf(dst, sizeof(dst), "%s/%s", dirname, files[i]);
+        // ignore errors for missing files, but try to copy
+        copy_file(files[i], dst);
+    }
+    log_action("Created backup: %s", dirname);
+    return 0;
+}
+
+// Restore files from given backup directory
+int restore_backup(const char *backup_dir) {
+    if (!backup_dir) return -1;
+    const char *files[] = {"users.txt","clubs.txt","members.txt","transactions.txt","activities.txt","participants.txt","fund_requests.txt"};
+    int i;
+    for (i = 0; i < (int)(sizeof(files)/sizeof(files[0])); i++) {
+        char src[512];
+        snprintf(src, sizeof(src), "%s/%s", backup_dir, files[i]);
+        // copy back to working dir
+        if (copy_file(src, files[i]) != 0) {
+            // continue even if some files fail
+        }
+    }
+    log_action("Restored backup from: %s", backup_dir);
+    return 0;
 }
 
 void load_users() {
