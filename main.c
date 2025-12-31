@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "club.h"
 #include "finance.h"
+#include "activity.h"
 
 // Define global heads
 User *users_head = NULL;
@@ -26,7 +27,10 @@ void print_menu() {
     printf("10. Validate data associations\n");
     printf("11. Search Clubs (Fuzzy)\n");
     printf("12. Sort Clubs\n");
-    printf("13. Exit\n");
+    printf("13. Publish Activity\n");
+    printf("14. Register for Activity\n");
+    printf("15. List Activities\n");
+    printf("16. Exit\n");
     printf("Choose an option: ");
 }
 
@@ -126,13 +130,43 @@ int main() {
                 sort_clubs(criteria);
                 break;
             }
-            case 13:
+            case 13: {
+                int club_id;
+                char name[256], start[64], end[64];
+                printf("Enter club ID: ");
+                scanf("%d", &club_id);
+                printf("Enter activity name: ");
+                scanf(" %[^\n]", name);
+                printf("Enter start time (YYYY-MM-DD HH:MM): ");
+                scanf(" %[^\n]", start);
+                printf("Enter end time (YYYY-MM-DD HH:MM): ");
+                scanf(" %[^\n]", end);
+                publish_activity(club_id, name, start, end);
+                break;
+            }
+            case 14: {
+                int activity_id, user_id;
+                printf("Enter activity ID: ");
+                scanf("%d", &activity_id);
+                printf("Enter user ID: ");
+                scanf("%d", &user_id);
+                register_for_activity(activity_id, user_id);
+                break;
+            }
+            case 15: {
+                int club_id;
+                printf("Enter club ID (0 for all): ");
+                scanf("%d", &club_id);
+                list_activities(club_id);
+                break;
+            }
+            case 16:
                 printf("Exiting...\n");
                 break;
             default:
                 printf("Invalid choice.\n");
         }
-    } while (choice != 13);
+    } while (choice != 16);
     save_data();
     return 0;
 }
