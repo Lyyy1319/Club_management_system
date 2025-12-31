@@ -113,12 +113,14 @@ void log_action(const char *fmt, ...) {
     FILE *fp = fopen("operation.log", "a");
     if (!fp) return;
     time_t t = time(NULL);
-    struct tm tm;
-    struct tm *lt = localtime(&t);
-    if (lt) tm = *lt; else memset(&tm,0,sizeof(tm));
-    char timestr[64];
-    strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", &tm);
-    fprintf(fp, "[%s] ", timestr);
+    struct tm *tmp = localtime(&t);
+    if (tmp) {
+        char timestr[64];
+        strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", tmp);
+        fprintf(fp, "[%s] ", timestr);
+    } else {
+        fprintf(fp, "[unknown time] ");
+    }
     va_list ap;
     va_start(ap, fmt);
     vfprintf(fp, fmt, ap);
@@ -146,11 +148,10 @@ static int copy_file(const char *src, const char *dst) {
 // Create backups/<timestamp>/ and copy data files
 int create_backup() {
     time_t t = time(NULL);
-    struct tm tm;
-    struct tm *lt = localtime(&t);
-    if (lt) tm = *lt; else memset(&tm,0,sizeof(tm));
+    struct tm *tmp = localtime(&t);
+    if (!tmp) return -1;
     char dirname[256];
-    strftime(dirname, sizeof(dirname), "backups/backup_%Y%m%d_%H%M%S", &tm);
+    strftime(dirname, sizeof(dirname), "backups/backup_%Y%m%d_%H%M%S", tmp);
     // create backups dir if needed
     mkdir("backups", 0755);
     if (mkdir(dirname, 0755) != 0) {

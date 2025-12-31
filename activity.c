@@ -73,3 +73,42 @@ void list_activities_for_club(int club_id) {
     }
     if (!found) printf(" No activities found.\n");
 }
+
+// ------------ Compatibility wrappers for other branch ------------
+
+void publish_activity(int club_id, const char *name, const char *start_time, const char *end_time) {
+    Activity *a = create_activity(club_id, name, start_time, end_time);
+    if (a) printf("Activity '%s' published with ID %d.\n", a->name, a->id);
+}
+
+void register_for_activity(int activity_id, int user_id) {
+    Activity *a = activities_head;
+    while (a && a->id != activity_id) a = a->next;
+    if (!a) { printf("Activity %d not found.\n", activity_id); return; }
+    Participant *p = a->participants;
+    while (p) { if (p->user_id == user_id) { printf("User %d already registered.\n", user_id); return; } p = p->next; }
+    Participant *np = malloc(sizeof(Participant));
+    if (!np) return;
+    np->user_id = user_id;
+    np->next = a->participants;
+    a->participants = np;
+    printf("User %d registered for activity %d.\n", user_id, activity_id);
+}
+
+void list_activities(int club_id) {
+    Activity *a = activities_head;
+    int found = 0;
+    printf("\n--- Activity List ---\n");
+    while (a) {
+        if (club_id == 0 || a->club_id == club_id) {
+            int count = 0; Participant *p = a->participants; while (p) { count++; p = p->next; }
+            printf("ID: %d | Club ID: %d | Name: %s\n", a->id, a->club_id, a->name);
+            printf("   Time: %s - %s\n", a->start_time, a->end_time);
+            printf("   Participants: %d\n", count);
+            printf("---------------------\n");
+            found = 1;
+        }
+        a = a->next;
+    }
+    if (!found) printf("No activities found.\n");
+}
