@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <time.h>
+#include <ctype.h>
 #include <sys/stat.h>
 #ifdef _WIN32
 #include <direct.h>
@@ -116,6 +118,8 @@ void log_action(const char *fmt, ...) {
         char timestr[64];
         strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", tmp);
         fprintf(fp, "[%s] ", timestr);
+    } else {
+        fprintf(fp, "[unknown time] ");
     }
     va_list ap;
     va_start(ap, fmt);
@@ -326,4 +330,88 @@ Club* find_club(int club_id) {
     Club *c = clubs_head;
     while (c && c->id != club_id) c = c->next;
     return c;
+}
+
+// ---------- Fuzzy matching (Levenshtein) ----------
+int levenshtein_distance(const char *s1, const char *s2) {
+    if (!s1) s1 = "";
+    if (!s2) s2 = "";
+    size_t len1 = strlen(s1), len2 = strlen(s2);
+    if (len1 == 0) return (int)len2;
+    if (len2 == 0) return (int)len1;
+
+    int *prev = malloc((len2 + 1) * sizeof(int));
+    int *cur = malloc((len2 + 1) * sizeof(int));
+    if (!prev || !cur) {
+        if (prev) free(prev);
+        if (cur) free(cur);
+        return INT_MAX/2;
+    }
+
+    for (size_t j = 0; j <= len2; j++) prev[j] = (int)j;
+
+    for (size_t i = 1; i <= len1; i++) {
+        cur[0] = (int)i;
+        for (size_t j = 1; j <= len2; j++) {
+            int cost = (s1[i-1] == s2[j-1]) ? 0 : 1;
+            int a = prev[j] + 1;
+            int b = cur[j-1] + 1;
+            int c = prev[j-1] + cost;
+            int v = a < b ? a : b;
+            if (c < v) v = c;
+            cur[j] = v;
+        }
+        for (size_t j = 0; j <= len2; j++) prev[j] = cur[j];
+    }
+
+    int res = cur[len2];
+    free(prev);
+    free(cur);
+    return res;
+}
+
+int fuzzy_match(const char *s, const char *pattern, int max_distance) {
+    if (!s || !pattern) return 0;
+    // simple case-insensitive substring check first
+    char *hs = malloc(strlen(s) + 1);
+    char *hp = malloc(strlen(pattern) + 1);
+    if (!hs || !hp) { if (hs) free(hs); if (hp) free(hp); return 0; }
+    for (size_t i = 0; i <= strlen(s); i++) hs[i] = tolower((unsigned char)s[i]);
+    for (size_t i = 0; i <= strlen(pattern); i++) hp[i] = tolower((unsigned char)pattern[i]);
+    int contains = (strstr(hs, hp) != NULL);
+    free(hs);
+    free(hp);
+    if (contains) return 1;
+
+    int dist = levenshtein_distance(s, pattern);
+    return dist <= max_distance;
+}
+
+// ---------- Time parsing for activities ----------
+time_t parse_time_str(const char *time_str) {
+    if (!time_str) return (time_t)-1;
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
+    int year=0, month=0, day=0, hour=0, min=0, sec=0;
+    // support formats: "YYYY-MM-DD HH:MM[:SS]" or "YYYY-MM-DD_HH:MM[:SS]"
+    if (sscanf(time_str, "%d-%d-%d %d:%d:%d", &year, &month, &day, &hour, &min, &sec) >= 5) {
+        // ok
+    } else if (sscanf(time_str, "%d-%d-%d_%d:%d:%d", &year, &month, &day, &hour, &min, &sec) >= 5) {
+        // ok
+    } else if (sscanf(time_str, "%d/%d/%d %d:%d:%d", &year, &month, &day, &hour, &min, &sec) >= 5) {
+        // ok
+    } else if (sscanf(time_str, "%d-%d-%d %d:%d", &year, &month, &day, &hour, &min) >= 4) {
+        sec = 0;
+    } else {
+        return (time_t)-1; // unrecognized
+    }
+
+    tm.tm_year = year - 1900;
+    tm.tm_mon = month - 1;
+    tm.tm_mday = day;
+    tm.tm_hour = hour;
+    tm.tm_min = min;
+    tm.tm_sec = sec;
+    tm.tm_isdst = -1;
+    return mktime(&tm);
 }

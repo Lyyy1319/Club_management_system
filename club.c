@@ -237,11 +237,19 @@ void search_clubs_fuzzy(const char* keyword) {
     printf("\n--- Search Results for '%s' ---\n", keyword);
     Club* c = clubs_head;
     int found = 0;
+    int max_distance = 2;
+    if (keyword && strlen(keyword) > 6) max_distance = (int)(strlen(keyword) / 3);
     while (c) {
         if (str_contains_ignore_case(c->name, keyword)) {
-            printf("ID: %d | Name: %s | Balance: %.2f | Approved: %d\n", 
+            printf("ID: %d | Name: %s | Balance: %.2f | Approved: %d\n",
                    c->id, c->name, c->balance, c->approved);
             found = 1;
+        } else {
+            if (fuzzy_match(c->name, keyword, max_distance)) {
+                printf("ID: %d | Name: %s | Balance: %.2f | Approved: %d (fuzzy)\n",
+                       c->id, c->name, c->balance, c->approved);
+                found = 1;
+            }
         }
         c = c->next;
     }
